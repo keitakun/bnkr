@@ -1,6 +1,8 @@
 package com.unit9.bnkr.version
 {
-	import flash.display.Stage;
+	import com.unit9.bnkr.ns.CUSTOM;
+
+	import flash.display.InteractiveObject;
 	import flash.ui.ContextMenu;
 	import flash.ui.ContextMenuItem;
 	/**
@@ -8,25 +10,21 @@ package com.unit9.bnkr.version
 	 * unit9 2012 
 	 * All rights reserved.
 	 */
-	public function addSignature(stage : Stage) : void
+	
+	
+	public function addSignature(stage : InteractiveObject) : void
 	{
 		var cx : ContextMenu = new ContextMenu();
 		cx.hideBuiltInItems();
 		ContextMenuItem;
-			
-		/*FDT_IGNORE*/
 		try
 		{
-			if(CONFIG::VERSION != undefined) cx.customItems = [new ContextMenuItem("unit9.com :: Version " + CONFIG::VERSION + " :: All rights reserved", true, false)];
-			else cx.customItems = [new ContextMenuItem("unit9.com :: All rights reserved", true, false)];
-			
+			cx.customItems = [new ContextMenuItem("unit9.com :: Version " + CUSTOM::VERSION + " :: All rights reserved", true, false)];
 		} catch (e : *) {
 			
-			cx.customItems = [new ContextMenuItem("unit9.com :: All rights reserved", true, false)];
+			cx.customItems = [new ContextMenuItem("unit9.com :: All rights reserved " + new Date().getFullYear().toString(), true, false)];
 			
 		}
-		/*FDT_IGNORE*/
-			
 		stage.contextMenu = cx;
 	}
 }

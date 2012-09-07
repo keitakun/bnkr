@@ -1,5 +1,6 @@
 package
 {
+	import flash.events.Event;
 	import com.unit9.bnkr.version.addSignature;
 	import flash.display.Sprite;
 
@@ -12,7 +13,13 @@ package
 	{
 		public function Testerz()
 		{
-			addSignature(stage);
+			if(stage) init();
+			else addEventListener(Event.ADDED_TO_STAGE, init);
+		}
+		
+		private function init(e:Event = null):void
+		{
+			addSignature(this);
 		}
 	}
 }
