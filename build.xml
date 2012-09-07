@@ -16,6 +16,7 @@
 		<success source="/System/Library/Sounds/Glass.aiff" />
 		<fail source="/System/Library/Sounds/Ping.aiff" />
 	</sound>
+	
 	<target name="__compile" id="__compile" depends="Check Changed" unless="notchanged">
 		<property name="debug" value="true" />
 		<property name="mainClass" value="" />

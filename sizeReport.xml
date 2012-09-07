@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report>
+  <swf size="2152" compressedSize="1314">
+
+    <!-- Header data (SWF attributes, product info, markers, etc.) -->
+    <headerData totalSize="582">
+      <data type="metaData" size="480"/>
+      <data type="productInfo" size="28"/>
+      <data type="swfHeader" size="21"/>
+      <data type="debugID" size="18"/>
+      <data type="enableDebugger" size="16"/>
+      <data type="fileAttributes" size="6"/>
+      <data type="scriptLimits" size="6"/>
+      <data type="backgroundColor" size="5"/>
+      <data type="endMarker" size="2"/>
+    </headerData>
+
+    <!-- Cumulative frame size summary. -->
+    <frames totalSize="1570">
+      <frame name="Testerz" size="1570" frame="1"/>
+    </frames>
+
+    <!-- Actionscript code and constant data. -->
+    <actionScript totalSize="1544">
+      <abc name="com/unit9/bnkr/version/addSignature" size="832" frame="1"/>
+      <abc name="Testerz" size="712" frame="1"/>
+    </actionScript>
+
+    <!-- Additional frame tags (symbolClass, exportAssets, showFrame, etc). -->
+    <frameData totalSize="26">
+      <tag type="symbolClass" size="14" frame="1"/>
+      <tag type="frameLabel" size="10" frame="1"/>
+      <tag type="showFrame" size="2" frame="1"/>
+    </frameData>
+  </swf>
+</report>
