@@ -17,14 +17,25 @@ package com.unit9.bnkr.version
 		/*FDT_IGNORE*/
 		try
 		{
-			if(CONFIG::VERSION != undefined) cx.customItems = [new ContextMenuItem("unit9.com :: Version " + CONFIG::VERSION + " :: All rights reserved", true, false)];
-			else cx.customItems = [new ContextMenuItem("unit9.com :: All rights reserved", true, false)];
+			trace(CONFIG);
+			var a : * = CONFIG;
 			
-		} catch (e : *) {
-			
-			cx.customItems = [new ContextMenuItem("unit9.com :: All rights reserved", true, false)];
-			
+		} catch(e : *)
+		{
+			trace('didnt find any');
 		}
+		
+//		try
+//		{
+//			
+//			if(CONFIG::VERSION != undefined) cx.customItems = [new ContextMenuItem("unit9.com :: Version " + CONFIG::VERSION + " :: All rights reserved", true, false)];
+//			else cx.customItems = [new ContextMenuItem("unit9.com :: All rights reserved", true, false)];
+//			
+//		} catch (e : *) {
+//			
+//			cx.customItems = [new ContextMenuItem("unit9.com :: All rights reserved", true, false)];
+//			
+//		}
 		/*FDT_IGNORE*/
 			
 		stage.contextMenu = cx;
