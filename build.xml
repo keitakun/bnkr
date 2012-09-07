@@ -1,0 +1,267 @@
+<?xml version="1.0"?>
+<!-- ====================================================================== 
+     AS3 project structure    
+     ====================================================================== -->
+<project name="unit9" default="1. Compile Debug">
+
+	<description>
+		unit9
+    </description>
+
+	<property environment="env" />
+	<property file="${basedir}/build_${env.COMPUTERNAME}.properties" />
+	<property file="${basedir}/build_project.properties" />
+
+	<sound>
+		<success source="/System/Library/Sounds/Glass.aiff" />
+		<fail source="/System/Library/Sounds/Ping.aiff" />
+	</sound>
+	<target name="__compile" id="__compile" depends="Check Changed" unless="notchanged">
+		<property name="debug" value="true" />
+		<property name="mainClass" value="" />
+		<property name="target" value="" />
+		<property name="extraArguments" value="" />
+		<property name="settings" value="${project.settings}" />
+		<script language="javascript">
+			<![CDATA[
+			
+			function splitParams(params)
+			{
+				var re = /(\-.*?)(\s|$)/g;
+				var obj;
+				var r = {};
+				var i = 0;
+				var index = 0;
+				var prev;
+				while(obj = re.exec(params))
+				{
+					if(i++ > 0)
+					{
+						r[prev[1]] = params.substr(prev.index, obj.index - prev.index - 1);
+					}
+					prev = obj;
+				}
+				r[prev[1]] = params.substr(prev.index);
+				return r;
+			}
+			var settings = splitParams(project.getProperty('settings'));
+			var extraArguments = project.getProperty('extraArguments');
+			if(extraArguments && extraArguments.length() > 0) 
+			{
+				extraArguments = splitParams(extraArguments);
+				var p;
+				for(p in extraArguments)
+				{
+					settings[p] = extraArguments[p];
+				}
+				
+				var r = '';
+				for(p in settings)
+				{
+					r += settings[p] + " ";
+				}
+
+				project.setProperty('settings', r);
+			}else{
+				project.setProperty('settings', project.getProperty('settings'));
+			}
+			]]>
+		</script>
+		<script language="javascript">
+			<![CDATA[
+			var versionArr = String(project.getProperty("project.version")).split(".");
+			versionArr[versionArr.length - 1] = Number(versionArr[versionArr.length - 1]) + 1;
+			project.setProperty("version", versionArr.join("."));
+			]]>
+		</script>
+		<propertyfile file="${basedir}/build_project.properties">
+			<entry key="project.version" value="${version}" />
+		</propertyfile>
+		<echo message="Compiling:" />
+		<echo message="	${mainClass} > ${target}" />
+		<echo message="	Debug: ${debug}" />
+
+		<fdt.launch.application mainclass="${mainClass}" target="${target}" compilerarguments="${settings}" projectname="${project.name}" debug="${debug}" startswf="false" />
+		<eclipse.refreshLocal resource="${project.name}/" depth="infinite" />
+		<length file="${target}" property="fSize" />
+		<echo message="Output size: ${fSize} bytes" />
+		<echo message="Version: ${project.version}" />
+	</target>
+
+	<target name="Check Changed" id="CheckChanged">
+		<property name="target" value="" />
+		<uptodate property="notchanged" targetfile="${target}">
+			<srcfiles dir="${basedir}" includes="**/*.as" />
+			<srcfiles dir="${basedir}" includes="**/*.mxml" />
+		</uptodate>
+	</target>
+
+	<target name="1. Compile Test">
+		<fdt.launch.application mainclass="${basedir}/src/Test.as" target="${basedir}/${project.bin}Test.swf" compilerarguments="${project.settings}" projectname="${project.name}" debug="false" startswf="false" />
+	</target>
+
+	<target name="1. Compile Debug">
+		<antcall target="__compile">
+			<param name="debug" value="true" />
+			<param name="mainClass" value="${project.main.class}" />
+			<param name="target" value="${project.main.swf}" />
+			<param name="extraArguments" value="-size-report=${basedir}/sizeReport.xml " />
+		</antcall>
+	</target>
+
+	<target name="1. Compile Release">
+		<antcall target="__compile">
+			<param name="debug" value="false" />
+			<param name="mainClass" value="${project.main.class}" />
+			<param name="target" value="${project.main.swf}" />
+			<param name="extraArguments" value="-omit-trace-statements true" />
+		</antcall>
+	</target>
+
+	<!-- ================================= 
+          target: Fonts
+         ================================= -->
+	<target name="3. Compile Font">
+		<fileset id="fontClasses" dir="${project.fontSrc}/" includes="*.as" />
+		<property name="fontList" refid="fontClasses" />
+		<script language="javascript">
+			<![CDATA[
+			var i, l;
+			var fc = [].concat(project.getProperty("fontList").split(";"));
+			var validChars = [];
+			var fl = [];
+			l = fc.length;
+			validChars.push("0");
+			for(i = 0; i < l; i++){
+				fl.push(fc[i]);
+				fc[i] = (i + 1).toString() + ".\t" + fc[i];
+				validChars.push((i + 1).toString());
+			}
+			fc.unshift("0.\tAll fonts");
+			project.setProperty("fontClasses", fc.join("\n") + "\n");
+			project.setProperty("validChars", validChars.join(","));
+			project.setProperty("fontList", fl.join(","));
+			]]>
+		</script>
+		<echo message="${fontClasses}" />
+		<input message="${fontClasses}" addproperty="fontIndex" validargs="${validChars}" />
+		<script language="javascript">
+			<![CDATA[
+			var fi = project.getProperty("fontIndex");
+			var fpath = project.getProperty("project.fontSrc");
+			var opath = project.getProperty("project.fontBin");
+			var fontClasses = project.getProperty("fontClasses").split("\n");
+			var fontList = project.getProperty("fontList").split(",");
+			
+			var font;
+			var compileFont = project.getReference("compileFont");
+			var list = [];
+			var i, l;
+			
+			if(fi == 0){
+				list = fontList;
+			}else{
+				list = [].concat(fontList[fi - 1]);
+			}
+			
+			l = list.length;
+			var name, src, swf;
+			for(i = 0; i < l; i++){
+				name = list[i].split(".as").join("");
+				src = fpath + list[i];
+				swf = opath + name + ".swf";
+				project.setProperty("fontSettings.name", name);
+				project.setProperty("fontSettings.src", src);
+				project.setProperty("fontSettings.swf", swf);
+				compileFont.execute();
+			}
+			]]>
+		</script>
+	</target>
+	<target name="3.1. Compile Font">
+		<input message="Class Name" addproperty="fontClassName" />
+		<fdt.launch.application mainclass="${project.path}fonts/${fontClassName}.as" target="${project.output}data/fonts/${fontClassName}.swf" compilerarguments="${project.settings}" projectname="${project.name}" debug="false" startswf="false" />
+	</target>
+	<target name="_Compile Font" id="compileFont">
+		<echo message="Compiling font: ${fontSettings.name}" />
+		<fdt.launch.application mainclass="${fontSettings.src}" target="${fontSettings.swf}" projectname="${project.name}" debug="${debug}" startswf="false" />
+	</target>
+
+
+	<!-- ================================= 
+          target: reset
+         ================================= -->
+
+	<target name="Setup">
+		<condition property="project.src" value="develop/src/">
+			<not>
+				<isset property="project.src" />
+			</not>
+		</condition>
+		<condition property="project.bin" value="website/">
+			<not>
+				<isset property="project.bin" />
+			</not>
+		</condition>
+		<condition property="project.settings.targetPlayer" value="10.0.0">
+			<not>
+				<isset property="project.settings.targetPlayer" />
+			</not>
+		</condition>
+		<condition property="project.settings.width" value="550">
+			<not>
+				<isset property="project.settings.width" />
+			</not>
+		</condition>
+		<condition property="project.settings.height" value="400">
+			<not>
+				<isset property="project.settings.height" />
+			</not>
+		</condition>
+		<condition property="project.settings.fps" value="30">
+			<not>
+				<isset property="project.settings.fps" />
+			</not>
+		</condition>
+		<condition property="project.settings.bg" value="0xFFFFFF">
+			<not>
+				<isset property="project.settings.bg" />
+			</not>
+		</condition>
+		<condition property="project.settings.className" value="Main">
+			<not>
+				<isset property="project.settings.className" />
+			</not>
+		</condition>
+		<input message="Source folder" addproperty="projectSrc" defaultvalue="${project.src}" />
+		<input message="Output folder" addproperty="projectBin" defaultvalue="${project.bin}" />
+		<input message="Target player version" addproperty="targetPlayer" defaultvalue="${project.settings.targetPlayer}" />
+		<input message="Output width" addproperty="outputWidth" defaultvalue="${project.settings.width}" />
+		<input message="Output height" addproperty="outputHeight" defaultvalue="${project.settings.height}" />
+		<input message="Frame rate" addproperty="frameRate" defaultvalue="${project.settings.fps}" />
+		<input message="Background colour" addproperty="bgColor" defaultvalue="${project.settings.bg}" />
+		<input message="Main class name" addproperty="mainClass" defaultvalue="${project.settings.className}" />
+		<propertyfile file="${basedir}/build_project.properties">
+			<entry key="project.src" type="string" value="${projectSrc}" />
+			<entry key="project.settings.targetPlayer" value="${targetPlayer}" />
+			<entry key="project.settings.width" value="${outputWidth}" />
+			<entry key="project.settings.height" value="${outputHeight}" />
+			<entry key="project.settings.fps" value="${frameRate}" />
+			<entry key="project.settings.bg" value="${bgColor}" />
+			<entry key="project.settings.className" value="${mainClass}" />
+			<entry key="project.settings" type="string" value="-target-player $${project.settings.targetPlayer} -default-size $${project.settings.width} $${project.settings.height} -default-frame-rate $${project.settings.fps} -default-background-color $${project.settings.bg} -default-script-limits 15000 60 -use-network=false -strict=true -optimize=true -static-link-runtime-shared-libraries=true" />
+			<entry key="project.bin" type="string" value="${projectBin}" />
+			<entry key="project.name" type="string" value="${ant.project.name}" />
+			<entry key="project.main.class" type="string" value="$${basedir}/$${project.src}$${project.settings.className}.as" />
+			<entry key="project.main.swf" type="string" value="$${basedir}/$${project.bin}$${project.settings.className}.swf" />
+		</propertyfile>
+		<eclipse.refreshLocal resource="${basedir}" depth="infinite" />
+	</target>
+	<target name="test">
+		<fdt.loadProjectProperties projectname="${project.name}" />
+	</target>
+	<target name="9. Reset">
+		<fdt.launch.resetFCSH />
+	</target>
+
+</project>
